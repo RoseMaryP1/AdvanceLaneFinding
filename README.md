@@ -19,6 +19,7 @@ The steps used in this project are the following:
 Every camera has some distortion factor in its lens. The known approach to correct for that in (x,y,z) space is apply coefficients to undistort the image. To calculate this a camera calibration process is required.
 
 It involves reading a set of [warped chessboard images](/camera_cal), converting them into grey scale images before using `cv2.findChessboardCorners()` to identify the corners as `imgpoints`.
+
 ![9x6 Chessboard Corners Detected](/output_images/chessboard-corners-detected.png)   
 
 If corners are detected then they are collected as image points `imgpoints` along with a set of object points `objpoints`; with an assumption made that the chessboard is fixed on the (x,y) plane at z=0 (object points will hence be the same for each calibration image).
