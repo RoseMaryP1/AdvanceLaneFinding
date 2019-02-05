@@ -4,7 +4,7 @@ In this Advanced Lane Detection project, we apply computer vision techniques to 
 
 ![sample lane detection result](/output_images/writeup_intro_road.gif)
 
-The goals / steps of this project are the following:
+The steps used in this project are the following:
 
 - Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
 - Apply a distortion correction to raw images.
@@ -40,7 +40,7 @@ A threshold binary image, as the name infers, contains a representation of the o
 A sample output follows.
 ![Sample Threshold Image](/output_images/daytime-normal-threshold.png)
 
-Initial experimentation occurred in a [separate notebook](Thresholds.ipynb) before being refactored back into the project notebook in the `combined_threshold` function. It has a number of default thresholds for sobel gradient x&y, sobel magnitude, sober direction, Saturation (from HLS), Red (from RGB) and Y (luminance from [YUV](https://en.wikipedia.org/wiki/YUV)) plus a `threshold` type parameter (`daytime-normal`, `daytime-bright`, `daytime-shadow`, `daytime-filter-pavement`).
+Initial experimentation occurred in a [separate notebook](Thresholds.ipynb) before being refactored back into the project notebook in the `combined_threshold` function. It has a number of default thresholds for sobel gradient x&y, sobel magnitude, sober direction, Saturation (from HLS), Red (from RGB) and Y (luminance from YUV) plus a `threshold` type parameter (`daytime-normal`, `daytime-bright`, `daytime-shadow`, `daytime-filter-pavement`).
 
 Whilst the `daytime-normal` threshold worked great for the majority of images there were situations where it didn't e.g. pavement colour changes in bright light and shadow.
 
@@ -51,6 +51,7 @@ Whilst the `daytime-normal` threshold worked great for the majority of images th
 Other samples [Daytime Bright](/output_images/daytime-bright.png), [Daytime Shadow](/output_images/daytime-shadow.png) and [Daytime Filter Pavement](/output_images/daytime-filter-pavement.png).
 
 ### Perspective transform - birds eye view
+
 To be able to detect the road lines, the undistorted image is warped. The function `calc_warp_points` takes an image's height & width and then calculates the `src` and `dst` array of points. `perspective_transforms` takes them and returns two matrixes `M` and `Minv` for  `perspective_warp` and `perpective_unwarp` functions respectively. The following image, shows an undistorted image, with the src points drawn with the corresponding warped image (the goal here was straight lines) ![Distorted with bird's eye view](/output_images/undistorted_with_birdseye.png)
 
 ### Lane-line pixel identification and polynomial fit
@@ -92,26 +93,18 @@ Processing is triggered by setting the `Lane.image` variable. Convenient propert
 
 ## Pipeline (Video)
 
-Using [moviepy](http://zulko.github.io/moviepy/) to process the project video was simple. I also decorated the result with a frame count. The [Project Video Lane mp4 on GitHub](/project_video_lane.mp4), contains the result ([YouTube Copy](https://www.youtube.com/watch?v=cQU2tNtslZ0))
-
-[![Result Video embedded from YouTube](http://img.youtube.com/vi/cQU2tNtslZ0/0.jpg)](https://www.youtube.com/watch?v=cQU2tNtslZ0)
+Using [moviepy](http://zulko.github.io/moviepy/) to process the project video was simple. I also decorated the result with a frame count. The [Project Video Lane mp4 on GitHub](/project_video_lane.mp4), contains the result.
 
 ## Discussion
 ### Problems/Issues faced
-To some degree, I got distracted with trying to solve the issues I found in my algorithm with the challenge videos. This highlighted, that I need to improve my understanding of colour spaces, sobel and threshold combinations.
-
 I included a basic algorithm to remove pavement colours from the images using a centre, left and right focal point. I noticed that the dust colour on the vehicle seemed to be also in the road side foliage. This however wasn't sufficient to remove all pavement colour and didn't work when there was a road type transition. It was very CPU intensive.
 
 In the end, I used a combination of different methods, that used a basic noise filter on warped binary images to determine, if it was sufficient to look for a line or not. If it wasn't it tried the next one, with the final being a vertical rectangle window crawl down the image. Where the best filter was determined for each box. Again this was CPU intensive, but worked.
-
-Another issue faced was using the previous curvature radius to determine if this line was sane or not. The values were too jittery and when driving on a straight line, high. I decided not to pursue this.
 
 ### Opportunities for improvement in the algorithm/pipeline
 There is room here for some refactoring into a more Object oriented approach. This was not evident at the start of the project as to how it should be structured. I experimented a little with using `Pool` from multiprocessing to parallelise left and right lane searches. It didn't make it into my final classes as for normal line searching using a polynomial, as I did not ascertain if the multiprocessing overhead, outweighed the parallelism value. Certainly potential here to use a more functional approach to give the best runtime options for parallelisation.
 
 Other areas, include automatically detecting the src points for warp, handling bounce in the road and understanding surface height (above road) of the camera and its impact.
-
-I thought also as I've kept history, I could extend the warp to include a bird'e eye representation of the car on the road and directly behind it. I did mean averaging on results for smoothing drawn lines, but this was not included in the new line calculations from the next image frames.
 
 The algorithm could also be made to make predictions about the line when there is gaps. This would be easier with continuous lines then dashed.
 
