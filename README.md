@@ -1,6 +1,9 @@
 Advanced Lane Detection
 ===
 In this Advanced Lane Detection project, we apply computer vision techniques to augment video output with a detected road lane, road radius curvature and road centre offset. The video was supplied by Udacity and captured using the middle camera.
+
+![sample lane detection result](/output_images/writeup_intro_road.gif)
+
 The goals / steps of this project are the following:
 
 - Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
@@ -12,18 +15,16 @@ The goals / steps of this project are the following:
 - Warp the detected lane boundaries back onto the original image.
 - Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-A jupyter/iPython data science notebook was used and can be found on github [Full Project Repo](https://github.com/hortovanyi/udacity-advanced-lane-finding-project) - [Advanced Lane Finding Project Notebook](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/Advanced%20Lane%20Finding%20Project.ipynb) (Note the interactive  ipywidgets are not functional on github). The project is written in python and utilises [numpy](http://www.numpy.org/) and [OpenCV](http://opencv.org/).
-
 ##Camera Calibration
 Every camera has some distortion factor in its lens. The known approach to correct for that in (x,y,z) space is apply coefficients to undistort the image. To calculate this a camera calibration process is required.
 
-It involves reading a set of [warped chessboard images](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/tree/master/camera_cal), converting them into grey scale images before using `cv2.findChessboardCorners()` to identify the corners as `imgpoints`.
-![9x6 Chessboard Corners Detected](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/chessboard-corners-detected.png?raw=true)   
+It involves reading a set of [warped chessboard images](/camera_cal), converting them into grey scale images before using `cv2.findChessboardCorners()` to identify the corners as `imgpoints`.
+![9x6 Chessboard Corners Detected](/output_images/chessboard-corners-detected.png)   
 
 If corners are detected then they are collected as image points `imgpoints` along with a set of object points `objpoints`; with an assumption made that the chessboard is fixed on the (x,y) plane at z=0 (object points will hence be the same for each calibration image).
 
 In the function `camera_calibrate` I pass the collected `objpoints`, `imgpoints` and a test image for the camera image dimensions. It in turn uses `cv2.calibrateCamera()` to calculate the distortion coefficients before the test image is undistorted with `cv2.undistort()` giving the following result.
-![Original and Undistorted image](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/camera_original_undistort.png?raw=true)
+![Original and Undistorted image](/output_images/camera_original_undistort.png
 
 ## Pipeline (Test images)
 
@@ -31,31 +32,31 @@ After camera calibration a set of functions have been created to work on test im
 
 ### Distortion corrected image
 The `undistort_image` takes an image and defaults the `mtx` and `dist` variables from the previous camera calibration before returning the undistorted image.
-![test image distorted and undistorted](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/test_image_and_undistorted.png?raw=true)
+![test image distorted and undistorted](/output_images/test_image_and_undistorted.png)
 
 ### Threshold binary images
 A threshold binary image, as the name infers, contains a representation of the original image but in binary `0`,`1` as opposed to a BGR (Blue, Green, Red) colour spectrum. The threshold part means that say the Red colour channel( with a range of 0-255) was between a threshold value range of 170-255, that it would be set to `1`.
 
 A sample output follows.
-![Sample Threshold Image](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/daytime-normal-threshold.png?raw=true)
+![Sample Threshold Image](/output_images/daytime-normal-threshold.png)
 
-Initial experimentation occurred in a [separate notebook](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/Thresholds.ipynb) before being refactored back into the project notebook in the `combined_threshold` function. It has a number of default thresholds for sobel gradient x&y, sobel magnitude, sober direction, Saturation (from HLS), Red (from RGB) and Y (luminance from [YUV](https://en.wikipedia.org/wiki/YUV)) plus a `threshold` type parameter (`daytime-normal`, `daytime-bright`, `daytime-shadow`, `daytime-filter-pavement`).
+Initial experimentation occurred in a [separate notebook](Thresholds.ipynb) before being refactored back into the project notebook in the `combined_threshold` function. It has a number of default thresholds for sobel gradient x&y, sobel magnitude, sober direction, Saturation (from HLS), Red (from RGB) and Y (luminance from [YUV](https://en.wikipedia.org/wiki/YUV)) plus a `threshold` type parameter (`daytime-normal`, `daytime-bright`, `daytime-shadow`, `daytime-filter-pavement`).
 
 Whilst the `daytime-normal` threshold worked great for the majority of images there were situations where it didn't e.g. pavement colour changes in bright light and shadow.
 
-![Daytime Normal with noise bright light & pavement change](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/daytime-normal-overexposed.png?raw=true)
+![Daytime Normal with noise bright light & pavement change](/output_images/daytime-normal-overexposed.png)
 
-![Daytime Normal with shadow](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/daytime-normal-shadow.png?raw=true)
+![Daytime Normal with shadow](/output_images/daytime-normal-shadow.png)
 
-Other samples [Daytime Bright](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/daytime-bright.png?raw=true), [Daytime Shadow](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/daytime-shadow.png?raw=true) and [Daytime Filter Pavement](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/daytime-filter-pavement.png?raw=true).
+Other samples [Daytime Bright](/output_images/daytime-bright.png), [Daytime Shadow](/output_images/daytime-shadow.png) and [Daytime Filter Pavement](/output_images/daytime-filter-pavement.png).
 
 ### Perspective transform - birds eye view
-To be able to detect the road lines, the undistorted image is warped. The function `calc_warp_points` takes an image's height & width and then calculates the `src` and `dst` array of points. `perspective_transforms` takes them and returns two matrixes `M` and `Minv` for  `perspective_warp` and `perpective_unwarp` functions respectively. The following image, shows an undistorted image, with the src points drawn with the corresponding warped image (the goal here was straight lines) ![Distorted with bird's eye view](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/undistorted_with_birdseye.png?raw=true)
+To be able to detect the road lines, the undistorted image is warped. The function `calc_warp_points` takes an image's height & width and then calculates the `src` and `dst` array of points. `perspective_transforms` takes them and returns two matrixes `M` and `Minv` for  `perspective_warp` and `perpective_unwarp` functions respectively. The following image, shows an undistorted image, with the src points drawn with the corresponding warped image (the goal here was straight lines) ![Distorted with bird's eye view](/output_images/undistorted_with_birdseye.png)
 
 ### Lane-line pixel identification and polynomial fit
 Once we have a birds eye view with a combined threshold we are in a position to identify lines and a polynomial to draw a line (or to search for points in a binary image).
 
-![topdown warped binary image](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/birdseye-combined-straighline-small.png?raw=true)
+![topdown warped binary image](/output_images/birdseye-combined-straighline-small.png)
 
 A histogram is created via `lane_histogram` from the bottom third of the topdown warped binary image. Within `lane_peaks`, `scipy.signal` is used to identify left and right peaks. If just one peak then the max bin either side of centre is returned.
 
@@ -66,12 +67,12 @@ A histogram is created via `lane_histogram` from the bottom third of the topdown
 
 The search result is plotted on the bottom left of the below image with each box in green. To test line searching by polynomial, I then use the left & right WindowBox search polynomials as input to `calc_lr_fit_from_polys`. The bottom right graphic has the new polynomial line draw with a blue search window (relates to polynomial used for the search from `WindBox`es) that was used overlapping with a green window for the new.
 
-![Warped box seek and new polynomial fit](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/warped-box-seek-with-new-polyfit.png?raw=true)
+![Warped box seek and new polynomial fit](/output_images/warped-box-seek-with-new-polyfit.png)
 
 ### Radius of curvature calculation and vehicle from centre offset
 In road design, curvature is important and its normally measured by its radius length. For a straight line road, that value can be quite high.
 
-In this project our images are in pixel space and need to be converted into meters. The images are of US roads and I measured from [this image](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/birdseye-combined-straighline.png?raw=true) the distance between lines (413 pix) and the height of dashes (275 px). Lane width in the US is ~ 3.7 meters and dashed lines 3 metres. Thus `xm_per_pix` = 3.7/413 and `ym_per_pix` = 3./275 were used in `calc_curvature`. The function converted the polynomial from pixel space into a polynomial in meters.  
+In this project our images are in pixel space and need to be converted into meters. The images are of US roads and I measured from [this image](/output_images/birdseye-combined-straighline.png) the distance between lines (413 pix) and the height of dashes (275 px). Lane width in the US is ~ 3.7 meters and dashed lines 3 metres. Thus `xm_per_pix` = 3.7/413 and `ym_per_pix` = 3./275 were used in `calc_curvature`. The function converted the polynomial from pixel space into a polynomial in meters.  
 
 To calculate the offset from centre, I first determined where on the x plane, both the left `lx` and right `rx` lines crossed the image near the driver. I then calculated the `xcentre` of the image as the width/2. The `offset` was calculated such `(rx - xcenter) - (xcenter - lx)` before being multiple by `xm_per_pix`.
 
@@ -85,13 +86,13 @@ I decided to take a more python class based approach once I progressed through t
 Processing is triggered by setting the `Lane.image` variable. Convenient property methods `Lane.warped`, `Lane.warped_decorated`, `lane.result` and `lane.result_decorated` return processed images. It made it very easy to debug output using interactive ipywidgets (which don't work on github)
 
 #### Sample result images
-![`lane.result_decorated`](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/result_with_lane_unwarped.jpg?raw=true)
+![`lane.result_decorated`](/output_images/result_with_lane_unwarped.jpg)
 
-![Lane.warped_decorated](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/output_images/birdseye-with-original-threshold-result-using-windowing.jpg?raw=true)
+![Lane.warped_decorated](/output_images/birdseye-with-original-threshold-result-using-windowing.jpg)
 
 ## Pipeline (Video)
 
-Using [moviepy](http://zulko.github.io/moviepy/) to process the project video was simple. I also decorated the result with a frame count. The [Project Video Lane mp4 on GitHub](https://github.com/hortovanyi/udacity-advanced-lane-finding-project/blob/master/project_video_lane.mp4?raw=true), contains the result ([YouTube Copy](https://www.youtube.com/watch?v=cQU2tNtslZ0))
+Using [moviepy](http://zulko.github.io/moviepy/) to process the project video was simple. I also decorated the result with a frame count. The [Project Video Lane mp4 on GitHub](/project_video_lane.mp4), contains the result ([YouTube Copy](https://www.youtube.com/watch?v=cQU2tNtslZ0))
 
 [![Result Video embedded from YouTube](http://img.youtube.com/vi/cQU2tNtslZ0/0.jpg)](https://www.youtube.com/watch?v=cQU2tNtslZ0)
 
