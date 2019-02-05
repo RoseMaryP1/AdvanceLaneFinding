@@ -1,9 +1,6 @@
 Advanced Lane Detection
 ===
 In this Advanced Lane Detection project, we apply computer vision techniques to augment video output with a detected road lane, road radius curvature and road centre offset. The video was supplied by Udacity and captured using the middle camera.
-
-![sample lane detection result](https://raw.githubusercontent.com/hortovanyi/udacity-advanced-lane-finding-project/master/output_images/writeup_intro_road.gif)
-
 The goals / steps of this project are the following:
 
 - Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
